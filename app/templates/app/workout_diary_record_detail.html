@@ -1,0 +1,27 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<h1>{{ workoutrecord.menu }}</h1>
+<p>メモ：{{ workoutrecord.memo }}</p>
+<p>メモ：{{ workoutrecord.record_date }}</p>
+
+{% for _ in for_range %}
+<table>
+    <thead>
+        <tr>
+            <th>{{ forloop.counter }}セット目</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <form method="post">
+                <td>{{ form.as_p }}</td>
+                <td><button class="btn btn-primary" type="submit">記録</button></td>
+                {% csrf_token %}
+            </form>
+        </tr>
+    </tbody>
+</table>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<h1>{{ year }}年{{ month }}月{{ day }}日の記録</h1>
+{% for object in object_list %}
+<ul>
+    <li><a href="{% url 'workout_diary_record_detail' year month day object.pk %}">{{ object.menu }}</a></li>
+</ul>
+{% empty %}
+<p>記録なし</p>
+{% endfor %}
+{% endblock %}
