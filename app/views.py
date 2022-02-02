@@ -15,7 +15,7 @@ class WorkOutDiaryListView(ListView):
     template_name = 'app/workout_diary_list.html'
 
     def get_queryset(self):
-        return WorkOutRecord.objects.distinct().values_list('record_date')
+        return WorkOutRecord.objects.distinct().values_list('record_date').order_by('-record_date')
 
 class WorkOutDiaryRecordView(CreateView):
     template_name = 'app/workout_diary_record.html'
