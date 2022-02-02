@@ -1,11 +1,9 @@
 from django.shortcuts import render
-
-# Create your views here.
-from django.shortcuts import render
 from django.views.generic import ListView, CreateView, FormView
 from .models import WorkOutRecord, WorkOutRepsRecord
 from django.urls import reverse_lazy
 from .forms import WorkOutRecordForm, WorkOutRecordRepsForm
+from django import forms
 
 class Test(ListView):
     template_name = 'app/test.html'
@@ -42,6 +40,9 @@ class WorkOutDiaryRecordListView(ListView):
     def get_queryset(self):
         return WorkOutRecord.objects.filter(record_date__year=self.kwargs['year'], record_date__month=self.kwargs['month'], record_date__day=self.kwargs['day'])
 
+class EmptyClass(forms.Form):
+    pass
+
 class WorlOutDiaryRecordDetailView(FormView):
     template_name = 'app/workout_diary_record_detail.html'
     form_class = WorkOutRecordRepsForm
@@ -49,8 +50,11 @@ class WorlOutDiaryRecordDetailView(FormView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        reps_forms = EmptyClass()
+        for index in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets)):
+            reps_forms.fields[index] = forms.CharField(label=str(index))
+        context['reps_forms'] = reps_forms
         context['workoutrecord'] = WorkOutRecord.objects.get(pk=self.kwargs['pk'])
-        context['for_range'] = [i for i in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets))]
         return context
 
     def form_valid(self, form):

@@ -5,7 +5,7 @@
 <p>メモ：{{ workoutrecord.memo }}</p>
 <p>メモ：{{ workoutrecord.record_date }}</p>
 
-{% for _ in for_range %}
+{% for reps_form in reps_forms %}
 <table>
     <thead>
         <tr>
@@ -15,9 +15,9 @@
     <tbody>
         <tr>
             <form method="post">
-                <td>{{ form.as_p }}</td>
-                <td><button class="btn btn-primary" type="submit">記録</button></td>
                 {% csrf_token %}
+                <td>{{ reps_form }}</td>
+                <td><button class="btn btn-primary" type="submit">記録</button></td>
             </form>
         </tr>
     </tbody>
