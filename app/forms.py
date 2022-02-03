@@ -6,7 +6,5 @@ class WorkOutRecordForm(forms.ModelForm):
         model = WorkOutRecord
         fields = '__all__'
 
-class WorkOutRecordRepsForm(forms.ModelForm):
-    class Meta:
-        model = WorkOutRepsRecord
-        fields = ('reps',)
+class WorkOutRecordRepsForm(forms.Form):
+    pass
