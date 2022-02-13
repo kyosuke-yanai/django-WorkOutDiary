@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
+    'django_boost',#htmlテンプレート上のfor文で要素を2個ずつ取り出す
 ]
 
 MIDDLEWARE = [

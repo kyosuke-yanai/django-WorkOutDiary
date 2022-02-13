@@ -1,3 +1,4 @@
+from email.policy import default
 from django.shortcuts import render
 from django.views.generic import ListView, CreateView, FormView
 from .models import WorkOutRecord, WorkOutRepsRecord
@@ -43,7 +44,7 @@ class WorkOutDiaryRecordListView(ListView):
 class WorlOutDiaryRecordDetailView(FormView):
     template_name = 'app/workout_diary_record_detail.html'
     form_class = WorkOutRecordRepsForm
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         reps_forms = WorkOutRecordRepsForm()
@@ -51,9 +52,10 @@ class WorlOutDiaryRecordDetailView(FormView):
             reps_forms.fields[index] = forms.CharField(label=str(index))
         context['reps_forms'] = reps_forms
         context['workoutrecord'] = WorkOutRecord.objects.get(pk=self.kwargs['pk'])
+        context['workoutrepsrecords'] = WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))
         return context
 
-    def form_post_get(self, index, reps):
+    def get_post_form(self, index, reps):
         if self.request.POST.get(index) == None:
             return reps
         return int(self.request.POST.get(index))
@@ -62,7 +64,7 @@ class WorlOutDiaryRecordDetailView(FormView):
         form = super().form_valid(form)
         for index in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets)):
             workoutrepsrecord_date = WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index]
-            workoutrepsrecord_date.reps = self.form_post_get(str(index), workoutrepsrecord_date.reps)
+            workoutrepsrecord_date.reps = self.get_post_form(str(index), workoutrepsrecord_date.reps)
             workoutrepsrecord_date.save()
         return form
 
