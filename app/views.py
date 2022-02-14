@@ -1,9 +1,8 @@
-from email.policy import default
 from django.shortcuts import render
 from django.views.generic import ListView, CreateView, FormView
 from .models import WorkOutRecord, WorkOutRepsRecord
 from django.urls import reverse, reverse_lazy
-from .forms import WorkOutRecordForm, WorkOutRecordRepsForm
+from .forms import WorkOutRecordForm, WorkOutDetailRecordForm
 from django import forms
 
 class Test(ListView):
@@ -43,28 +42,32 @@ class WorkOutDiaryRecordListView(ListView):
 
 class WorlOutDiaryRecordDetailView(FormView):
     template_name = 'app/workout_diary_record_detail.html'
-    form_class = WorkOutRecordRepsForm
+    form_class = WorkOutDetailRecordForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        reps_forms = WorkOutRecordRepsForm()
+        reps_forms = WorkOutDetailRecordForm()
+        weight_forms = WorkOutDetailRecordForm()
         for index in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets)):
-            reps_forms.fields[index] = forms.CharField(label=str(index))
+            reps_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index].reps)
+            weight_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index].weight)
         context['reps_forms'] = reps_forms
+        context['weight_forms'] = weight_forms
         context['workoutrecord'] = WorkOutRecord.objects.get(pk=self.kwargs['pk'])
-        context['workoutrepsrecords'] = WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))
         return context
 
-    def get_post_form(self, index, reps):
-        if self.request.POST.get(index) == None:
-            return reps
-        return int(self.request.POST.get(index))
+    def get_post_form(self, index, reps, weight):
+        if self.request.POST.getlist(index) == []:
+            return (reps,weight)
+        return self.request.POST.getlist(index)
 
     def form_valid(self, form):
         form = super().form_valid(form)
         for index in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets)):
             workoutrepsrecord_date = WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index]
-            workoutrepsrecord_date.reps = self.get_post_form(str(index), workoutrepsrecord_date.reps)
+            workoutrepsrecord_detail_date = self.get_post_form(str(index), workoutrepsrecord_date.reps, workoutrepsrecord_date.weight)
+            workoutrepsrecord_date.reps = int(workoutrepsrecord_detail_date[0])
+            workoutrepsrecord_date.weight = int(workoutrepsrecord_detail_date[1])
             workoutrepsrecord_date.save()
         return form
 

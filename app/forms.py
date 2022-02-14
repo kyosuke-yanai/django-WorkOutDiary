@@ -1,10 +1,10 @@
 from django import forms
-from .models import WorkOutRecord, WorkOutRepsRecord
+from .models import WorkOutRecord
 
 class WorkOutRecordForm(forms.ModelForm):
     class Meta:
         model = WorkOutRecord
         fields = '__all__'
 
-class WorkOutRecordRepsForm(forms.Form):
+class WorkOutDetailRecordForm(forms.Form):
     pass

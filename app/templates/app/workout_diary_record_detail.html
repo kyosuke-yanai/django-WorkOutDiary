@@ -6,18 +6,19 @@
 <p>メモ：{{ workoutrecord.memo }}</p>
 <p>メモ：{{ workoutrecord.record_date }}</p>
 
-{% for reps_form, workoutrepsrecord in reps_forms|zip:workoutrepsrecords %}
+{% for reps_form, weight_form in reps_forms|zip:weight_forms %}
 <table>
     <thead>
         <tr>
-            <th>{{ forloop.counter }}セット目：{{ workoutrepsrecord.reps }}回</th>
+            <th>{{ forloop.counter }}セット目</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <form method="post">
                 {% csrf_token %}
-                <td>{{ reps_form }}</td>
+                <td>{{ reps_form }}回</td>
+                <td>{{ weight_form }}kg</td>
                 <td><button class="btn btn-primary" type="submit">記録</button></td>
             </form>
         </tr>
