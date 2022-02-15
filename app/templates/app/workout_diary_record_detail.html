@@ -4,7 +4,6 @@
 {% block content %}
 <h1>{{ workoutrecord.menu }}</h1>
 <p>メモ：{{ workoutrecord.memo }}</p>
-<p>メモ：{{ workoutrecord.record_date }}</p>
 
 {% for reps_form, weight_form in reps_forms|zip:weight_forms %}
 <table>

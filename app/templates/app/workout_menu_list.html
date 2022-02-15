@@ -1,0 +1,10 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<h1>メニュー一覧</h1>
+{% for menu in object_list %}
+<ul>
+    <li><a href="{% url 'workout_menu_detail' menu.pk %}">{{ menu }}</a></li>
+</ul>
+{% endfor %}
+{% endblock %}

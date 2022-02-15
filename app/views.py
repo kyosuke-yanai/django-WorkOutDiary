@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from django.views.generic import ListView, CreateView, FormView
-from .models import WorkOutRecord, WorkOutRepsRecord
+from django.views.generic import ListView, CreateView, FormView, DetailView
+from .models import WorkOutRecord, WorkOutRepsRecord, WorkOutMenu
 from django.urls import reverse, reverse_lazy
 from .forms import WorkOutRecordForm, WorkOutDetailRecordForm
 from django import forms
@@ -23,8 +23,9 @@ class WorkOutDiaryRecordView(CreateView):
 
     def form_valid(self, form):
         form = super().form_valid(form)
-        for _ in range(int(self.request.POST.get('sets'))):
-            WorkOutRepsRecord.objects.create(menu=WorkOutRecord.objects.all().last(), reps=0, weight=0)
+        menu_data = WorkOutMenu.objects.get(pk=self.request.POST.get('menu'))
+        for _ in range(int(menu_data.sets)):
+            WorkOutRepsRecord.objects.create(menu=WorkOutRecord.objects.all().last(), reps=menu_data.reps, weight=menu_data.weight)
         return form
 
 class WorkOutDiaryRecordListView(ListView):
@@ -48,12 +49,13 @@ class WorlOutDiaryRecordDetailView(FormView):
         context = super().get_context_data(**kwargs)
         reps_forms = WorkOutDetailRecordForm()
         weight_forms = WorkOutDetailRecordForm()
-        for index in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets)):
-            reps_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index].reps)
-            weight_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index].weight)
+        workoutrecord_data = WorkOutRecord.objects.get(pk=self.kwargs['pk'])
+        for index in range(workoutrecord_data.menu.sets):
+            reps_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=workoutrecord_data)[index].reps)
+            weight_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=workoutrecord_data)[index].weight)
         context['reps_forms'] = reps_forms
         context['weight_forms'] = weight_forms
-        context['workoutrecord'] = WorkOutRecord.objects.get(pk=self.kwargs['pk'])
+        context['workoutrecord'] = workoutrecord_data
         return context
 
     def get_post_form(self, index, reps, weight):
@@ -63,8 +65,7 @@ class WorlOutDiaryRecordDetailView(FormView):
 
     def form_valid(self, form):
         form = super().form_valid(form)
-        for index in range(int(WorkOutRecord.objects.get(pk=self.kwargs['pk']).sets)):
-            workoutrepsrecord_date = WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))[index]
+        for index, workoutrepsrecord_date in enumerate(WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))):
             workoutrepsrecord_detail_date = self.get_post_form(str(index), workoutrepsrecord_date.reps, workoutrepsrecord_date.weight)
             workoutrepsrecord_date.reps = int(workoutrepsrecord_detail_date[0])
             workoutrepsrecord_date.weight = int(workoutrepsrecord_detail_date[1])
@@ -73,3 +74,11 @@ class WorlOutDiaryRecordDetailView(FormView):
 
     def get_success_url(self):
         return reverse('workout_diary_record_detail', kwargs={'year': self.kwargs['year'], 'month': self.kwargs['month'], 'day': self.kwargs['day'], 'pk': self.kwargs['pk']})
+
+class WorkOutMenuListView(ListView):
+    template_name = 'app/workout_menu_list.html'
+    model = WorkOutMenu
+
+class WorkOutMenuDetailView(DetailView):
+    template_name = 'app/workout_menu_detail.html'
+    model = WorkOutMenu
