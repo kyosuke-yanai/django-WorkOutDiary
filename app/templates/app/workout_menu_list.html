@@ -2,9 +2,10 @@
 
 {% block content %}
 <h1>メニュー一覧</h1>
+<a href="{% url 'workout_menu_create' %}" class="btn btn-primary">メニュー登録</a>
 {% for menu in object_list %}
 <ul>
-    <li><a href="{% url 'workout_menu_detail' menu.pk %}">{{ menu }}</a></li>
+    <li><a href="{% url 'workout_menu_update' menu.pk %}">{{ menu }}</a></li>
 </ul>
 {% endfor %}
 {% endblock %}

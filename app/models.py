@@ -12,7 +12,8 @@ class WorkOutMenu(models.Model):
 
 class WorkOutRecord(models.Model):
     record_date = models.DateField(verbose_name='記録日', auto_now_add=True)
-    menu = models.ForeignKey(WorkOutMenu, on_delete=models.CASCADE)
+    menu = models.ForeignKey(WorkOutMenu, verbose_name='トレーニング名', on_delete=models.CASCADE)
+    sets = models.IntegerField(verbose_name='セット数')
     memo = models.TextField(verbose_name='メモ', null=True, blank=True)
 
     def __str__(self):

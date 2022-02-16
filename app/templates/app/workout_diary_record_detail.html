@@ -25,4 +25,6 @@
 </table>
 {% endfor %}
 
+<a href="{% url 'workout_diary_record_delete' workoutrecord.pk %}" class="btn btn-danger">削除</a>
+
 {% endblock %}
