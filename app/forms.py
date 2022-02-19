@@ -7,7 +7,7 @@ class WorkOutRecordForm(forms.ModelForm):
         fields = '__all__'
         exclude = ('sets',)
 
-class WorkOutDetailRecordForm(forms.Form):
+class EmptyForm(forms.Form):
     pass
 
 class WorkOutMenuForm(forms.ModelForm):

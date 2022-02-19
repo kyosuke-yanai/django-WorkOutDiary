@@ -1,11 +1,18 @@
 {% extends 'app/base.html' %}
+{% load boost %}
 
 {% block content %}
 <h1>メニュー一覧</h1>
 <a href="{% url 'workout_menu_create' %}" class="btn btn-primary">メニュー登録</a>
-{% for menu in object_list %}
+{% for menu_list,workout_type in object_list|zip:workout_type_list %}
 <ul>
-    <li><a href="{% url 'workout_menu_update' menu.pk %}">{{ menu }}</a></li>
+    <li>{{ workout_type.1 }}</li>
+    {% for menu in menu_list %}
+    <ul>
+        <li><a href="{% url 'workout_menu_update' menu.pk %}">{{ menu.get_parts_display }}：{{ menu }}  ：{{ menu.sets }}セット/{{ menu.reps }}回/{{ menu.weight }}kg</a></li>
+    </ul>
+    {% endfor %}
 </ul>
 {% endfor %}
+
 {% endblock %}

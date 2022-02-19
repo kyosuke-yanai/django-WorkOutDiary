@@ -1,9 +1,9 @@
 from dataclasses import fields
 from django.shortcuts import render
 from django.views.generic import ListView, CreateView, FormView, UpdateView, DeleteView
-from .models import WorkOutRecord, WorkOutRepsRecord, WorkOutMenu
+from .models import WorkOutRecord, WorkOutDetailRecord, WorkOutMenu
 from django.urls import reverse, reverse_lazy
-from .forms import WorkOutRecordForm, WorkOutDetailRecordForm, WorkOutMenuForm
+from .forms import WorkOutRecordForm, EmptyForm, WorkOutMenuForm
 from django import forms
 
 class Test(ListView):
@@ -27,7 +27,7 @@ class WorkOutDiaryRecordView(FormView):
         workoutrecord_data = WorkOutRecord(menu=menu_data, sets=menu_data.sets, memo=self.request.POST.get('memo'))
         workoutrecord_data.save()
         for _ in range(int(menu_data.sets)):
-            WorkOutRepsRecord.objects.create(menu=WorkOutRecord.objects.all().last(), reps=menu_data.reps, weight=menu_data.weight)
+            WorkOutDetailRecord.objects.create(menu=WorkOutRecord.objects.all().last(), reps=menu_data.reps, weight=menu_data.weight)
         return form
 
 class WorkOutDiaryRecordListView(ListView):
@@ -45,17 +45,16 @@ class WorkOutDiaryRecordListView(ListView):
 
 class WorlOutDiaryRecordDetailView(FormView):
     template_name = 'app/workout_diary_record_detail.html'
-    form_class = WorkOutDetailRecordForm
+    form_class = EmptyForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        reps_forms = WorkOutDetailRecordForm()
-        weight_forms = WorkOutDetailRecordForm()
+        reps_forms = EmptyForm()
+        weight_forms = EmptyForm()
         workoutrecord_data = WorkOutRecord.objects.get(pk=self.kwargs['pk'])
-        print()
         for index in range(workoutrecord_data.sets):
-            reps_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=workoutrecord_data)[index].reps)
-            weight_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutRepsRecord.objects.filter(menu=workoutrecord_data)[index].weight)
+            reps_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutDetailRecord.objects.filter(menu=workoutrecord_data)[index].reps)
+            weight_forms.fields[index] = forms.IntegerField(label=str(index), initial=WorkOutDetailRecord.objects.filter(menu=workoutrecord_data)[index].weight)
         context['reps_forms'] = reps_forms
         context['weight_forms'] = weight_forms
         context['workoutrecord'] = workoutrecord_data
@@ -68,7 +67,7 @@ class WorlOutDiaryRecordDetailView(FormView):
 
     def form_valid(self, form):
         form = super().form_valid(form)
-        for index, workoutrepsrecord_date in enumerate(WorkOutRepsRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))):
+        for index, workoutrepsrecord_date in enumerate(WorkOutDetailRecord.objects.filter(menu=WorkOutRecord.objects.get(pk=self.kwargs['pk']))):
             workoutrepsrecord_detail_date = self.get_post_form(str(index), workoutrepsrecord_date.reps, workoutrepsrecord_date.weight)
             workoutrepsrecord_date.reps = int(workoutrepsrecord_detail_date[0])
             workoutrepsrecord_date.weight = int(workoutrepsrecord_detail_date[1])
@@ -91,6 +90,19 @@ class WorkOutDiaryRecordDeleteView(DeleteView):
 class WorkOutMenuListView(ListView):
     template_name = 'app/workout_menu_list.html'
     model = WorkOutMenu
+
+    def get_queryset(self):
+        queryset = []
+        workoutmenu_data = WorkOutMenu.objects.order_by('parts')
+        for workout_type in WorkOutMenu._meta.get_field('workout_type').choices:
+            queryset.append(workoutmenu_data.filter(workout_type=workout_type[0]))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        workout_type_list = WorkOutMenu._meta.get_field('workout_type').choices
+        context['workout_type_list'] = workout_type_list
+        return context
 
 class WorkOutMenuUpdateView(UpdateView):
     template_name = 'app/workout_menu_update.html'
